@@ -1,7 +1,7 @@
 name: Build Release APK
 
 on:
-  workflow_dispatch: # 允许手动触发
+  workflow_dispatch: # 允许在 GitHub 页面上手动触发
 
 jobs:
   build:
@@ -21,8 +21,11 @@ jobs:
         with:
           packages: 'platforms;android-37 build-tools;37.0.0'
 
-      # 如果项目未配置默认签名，assembleRelease 产出的可能是 unsigned 包
-      # 若需要可安装的签名包，需在此处配置签名密钥
+      # 关键：强制自动接受所有 SDK 许可证，避免 CI 环境因交互式提示挂起
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
       - name: Build Release
         run: ./gradlew assembleRelease
 
