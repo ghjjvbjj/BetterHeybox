@@ -1,7 +1,7 @@
 name: Build Release APK
 
 on:
-  workflow_dispatch: # 允许在 GitHub 页面上手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,11 +20,15 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           packages: 'platforms;android-37 build-tools;37.0.0'
+          # 关键：关闭 action 自带的许可证接受，避免交互挂起
+          accept-android-sdk-licenses: false
 
-      # 关键：强制自动接受所有 SDK 许可证，避免 CI 环境因交互式提示挂起
+      # 手动接受所有许可证，用 yes 自动回答所有 y/N 提示
       - name: Accept Android SDK Licenses
         run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          SDKMANAGER=$(find $ANDROID_HOME -name sdkmanager -type f | head -n 1)
+          echo "Using sdkmanager: $SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses || true
 
       - name: Build Release
         run: ./gradlew assembleRelease
